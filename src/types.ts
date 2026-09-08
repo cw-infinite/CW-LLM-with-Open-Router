@@ -14,14 +14,22 @@ export interface ChatSession {
   modelUsed: string;
 }
 
+export interface EmbeddingResult {
+  embedding: number[];
+  dimensions: number;
+  tokensUsed: number;
+  model: string;
+}
+
 export interface OpenRouterConfig {
   apiKey: string;
   model: string;
+  embeddingModel: string;
+  stream: boolean; // Enables or disables SSE streaming
   temperature: number;
   topP: number;
   maxTokens: number;
   repetitionPenalty: number;
-  // OpenRouter Specifics
   reasoningEnabled: boolean;
   providerSort: 'price' | 'throughput' | 'latency';
   allowFallbacks: boolean;

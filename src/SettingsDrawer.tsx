@@ -8,13 +8,19 @@ interface DrawerProps {
   onClose: () => void;
 }
 
-const FREE_MODELS = [
+const FREE_CHAT_MODELS = [
   'openrouter/free',
   'google/gemini-2.0-flash-lite-001:free',
   'meta-llama/llama-3.3-70b-instruct:free',
   'deepseek/deepseek-r1:free',
   'qwen/qwen-2.5-coder-32b-instruct:free',
-  'mistralai/mistral-7b-instruct:free'
+];
+
+const EMBEDDING_MODELS = [
+  'openai/text-embedding-3-small',
+  'openai/text-embedding-3-large',
+  'openai/text-embedding-ada-002',
+  'cohere/embed-english-v3.0',
 ];
 
 export const SettingsDrawer: React.FC<DrawerProps> = ({ isOpen, config, onSave, onClose }) => {
@@ -54,7 +60,7 @@ export const SettingsDrawer: React.FC<DrawerProps> = ({ isOpen, config, onSave, 
           </div>
 
           <div style={styles.fieldGroup}>
-            <label style={styles.label}>Select or Enter Model ID</label>
+            <label style={styles.label}>Chat / LLM Model ID</label>
             <input
               type="text"
               value={formData.model}
@@ -63,9 +69,8 @@ export const SettingsDrawer: React.FC<DrawerProps> = ({ isOpen, config, onSave, 
               style={styles.input}
               required
             />
-            <span style={styles.hint}>Quick Pick Free Models:</span>
             <div style={styles.chipContainer}>
-              {FREE_MODELS.map((m) => (
+              {FREE_CHAT_MODELS.map((m) => (
                 <button
                   key={m}
                   type="button"
@@ -82,17 +87,57 @@ export const SettingsDrawer: React.FC<DrawerProps> = ({ isOpen, config, onSave, 
             </div>
           </div>
 
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>Embedding Model ID</label>
+            <input
+              type="text"
+              value={formData.embeddingModel}
+              onChange={(e) => handleChange('embeddingModel', e.target.value)}
+              placeholder="e.g. openai/text-embedding-3-small"
+              style={styles.input}
+            />
+            <div style={styles.chipContainer}>
+              {EMBEDDING_MODELS.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  style={{
+                    ...styles.chip,
+                    borderColor: formData.embeddingModel === m ? '#6366f1' : '#e2e8f0',
+                    backgroundColor: formData.embeddingModel === m ? '#eef2ff' : '#f8fafc',
+                  }}
+                  onClick={() => handleChange('embeddingModel', m)}
+                >
+                  {m.split('/')[1]}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <hr style={styles.divider} />
 
           <div style={styles.fieldGroup}>
-            <h4 style={styles.subHeading}>OpenRouter Features</h4>
+            <h4 style={styles.subHeading}>Execution Controls</h4>
+
             <label style={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={formData.stream}
+                onChange={(e) => handleChange('stream', e.target.checked)}
+              />
+              <strong>Enable Streaming (SSE)</strong>
+            </label>
+            <span style={styles.hint}>
+              When enabled, responses stream real-time. When disabled, the whole message arrives at once.
+            </span>
+
+            <label style={{ ...styles.checkboxLabel, marginTop: '8px' }}>
               <input
                 type="checkbox"
                 checked={formData.reasoningEnabled}
                 onChange={(e) => handleChange('reasoningEnabled', e.target.checked)}
               />
-              Enable Thinking / Reasoning Mode
+              Enable Thinking / Reasoning Tokens
             </label>
 
             <label style={styles.checkboxLabel}>
@@ -103,47 +148,9 @@ export const SettingsDrawer: React.FC<DrawerProps> = ({ isOpen, config, onSave, 
               />
               Allow Provider Fallbacks
             </label>
-
-            <label style={styles.label}>Provider Routing Priority</label>
-            <select
-              value={formData.providerSort}
-              onChange={(e) => handleChange('providerSort', e.target.value as any)}
-              style={styles.input}
-            >
-              <option value="throughput">Throughput (Fastest response)</option>
-              <option value="price">Price (Most economical)</option>
-              <option value="latency">Latency (Lowest time-to-first-token)</option>
-            </select>
           </div>
 
-          <hr style={styles.divider} />
-
-          <div style={styles.fieldGroup}>
-            <h4 style={styles.subHeading}>Hyperparameters</h4>
-            <label style={styles.label}>Temperature: {formData.temperature}</label>
-            <input
-              type="range"
-              min="0"
-              max="2"
-              step="0.1"
-              value={formData.temperature}
-              onChange={(e) => handleChange('temperature', parseFloat(e.target.value))}
-            />
-
-            <label style={styles.label}>Max Tokens: {formData.maxTokens}</label>
-            <input
-              type="range"
-              min="256"
-              max="8192"
-              step="256"
-              value={formData.maxTokens}
-              onChange={(e) => handleChange('maxTokens', parseInt(e.target.value, 10))}
-            />
-          </div>
-
-          <button type="submit" style={styles.saveBtn}>
-            Save Preferences
-          </button>
+          <button type="submit" style={styles.saveBtn}>Save Preferences</button>
         </form>
       </div>
     </div>
@@ -151,19 +158,19 @@ export const SettingsDrawer: React.FC<DrawerProps> = ({ isOpen, config, onSave, 
 };
 
 const styles: Record<string, React.CSSProperties> = {
-  overlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', zIndex: 100, display: 'flex', justifyContent: 'flex-end', animation: 'fadeIn 0.2s ease-out' },
-  drawer: { width: '420px', backgroundColor: '#ffffff', height: '100%', padding: '24px', overflowY: 'auto', boxShadow: '-10px 0 25px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', gap: '16px' },
+  overlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', zIndex: 100, display: 'flex', justifyContent: 'flex-end' },
+  drawer: { width: '420px', backgroundColor: '#ffffff', height: '100%', padding: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' },
   drawerHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  closeBtn: { border: 'none', background: 'transparent', fontSize: '18px', cursor: 'pointer', color: '#64748b' },
-  form: { display: 'flex', flexDirection: 'column', gap: '18px' },
-  fieldGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
+  closeBtn: { border: 'none', background: 'transparent', fontSize: '18px', cursor: 'pointer' },
+  form: { display: 'flex', flexDirection: 'column', gap: '16px' },
+  fieldGroup: { display: 'flex', flexDirection: 'column', gap: '6px' },
   label: { fontSize: '13px', fontWeight: 600, color: '#334155' },
-  subHeading: { margin: '0 0 6px 0', fontSize: '14px', color: '#0f172a' },
-  input: { padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none' },
-  hint: { fontSize: '11px', color: '#64748b', marginTop: '4px' },
-  chipContainer: { display: 'flex', flexWrap: 'wrap', gap: '6px' },
-  chip: { padding: '4px 8px', borderRadius: '6px', border: '1px solid', fontSize: '11px', cursor: 'pointer', transition: 'all 0.15s ease' },
-  checkboxLabel: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#334155', cursor: 'pointer' },
-  divider: { border: 'none', borderTop: '1px solid #e2e8f0', margin: '4px 0' },
-  saveBtn: { padding: '12px', borderRadius: '8px', border: 'none', backgroundColor: '#4f46e5', color: '#fff', fontWeight: 600, cursor: 'pointer', marginTop: 'auto' },
+  subHeading: { margin: '0 0 4px 0', fontSize: '14px', color: '#0f172a' },
+  input: { padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' },
+  hint: { fontSize: '11px', color: '#64748b', marginLeft: '24px' },
+  chipContainer: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '4px' },
+  chip: { padding: '4px 8px', borderRadius: '6px', border: '1px solid', fontSize: '11px', cursor: 'pointer' },
+  checkboxLabel: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer' },
+  divider: { border: 'none', borderTop: '1px solid #e2e8f0' },
+  saveBtn: { padding: '12px', borderRadius: '8px', border: 'none', backgroundColor: '#4f46e5', color: '#fff', fontWeight: 600, cursor: 'pointer' },
 };
