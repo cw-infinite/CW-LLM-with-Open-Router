@@ -1,36 +1,48 @@
-export interface Message {
+export type Role = "user" | "assistant" | "system";
+
+export interface ImageAttachment {
   id: string;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  reasoning?: string;
-  timestamp: number;
+  /** base64 data URL, e.g. "data:image/png;base64,..." */
+  dataUrl: string;
+  name: string;
 }
 
-export interface ChatSession {
+export interface ChatMessage {
+  id: string;
+  role: Role;
+  content: string;
+  images?: ImageAttachment[];
+  createdAt: number;
+  /** true while tokens are still arriving from the model */
+  streaming?: boolean;
+  /** set if the request failed */
+  error?: string;
+}
+
+export interface Chat {
   id: string;
   title: string;
+  messages: ChatMessage[];
   createdAt: number;
-  messages: Message[];
-  modelUsed: string;
+  updatedAt: number;
 }
 
-export interface EmbeddingResult {
-  embedding: number[];
-  dimensions: number;
-  tokensUsed: number;
-  model: string;
+export type ThemeMode = "light" | "dark" | "system";
+
+export interface AccentColor {
+  name: string;
+  /** hue 0-360 and saturation 0-100; lightness is fixed per light/dark theme in CSS */
+  h: number;
+  s: number;
 }
 
-export interface OpenRouterConfig {
+export interface ConnectionSettings {
   apiKey: string;
   model: string;
-  embeddingModel: string;
-  stream: boolean; // Enables or disables SSE streaming
-  temperature: number;
-  topP: number;
-  maxTokens: number;
-  repetitionPenalty: number;
-  reasoningEnabled: boolean;
-  providerSort: 'price' | 'throughput' | 'latency';
-  allowFallbacks: boolean;
+}
+
+export interface AppSettings {
+  connection: ConnectionSettings;
+  theme: ThemeMode;
+  accent: AccentColor;
 }
