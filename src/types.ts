@@ -46,3 +46,29 @@ export interface AppSettings {
   theme: ThemeMode;
   accent: AccentColor;
 }
+
+export interface EmbeddingResult {
+  embedding: any;
+  dimensions: number;
+  tokensUsed: number;
+  model: string;
+}
+
+export interface OpenRouterConfig {
+  apiKey: string;
+  model: string;
+  embeddingModel: string;
+  stream: boolean;
+  reasoningEnabled: boolean;
+  allowFallbacks: boolean;
+  temperature: any;
+  topP: any;
+  maxTokens: any;
+  repetitionPenalty: any;
+  providerSort: any;
+}
+
+export interface Message{ 
+  role: any;
+  content: any;
+}
